@@ -1,4 +1,3 @@
-// frontend/components/QuickStats.tsx
 "use client";
 
 import React, { useMemo } from "react";
@@ -7,90 +6,91 @@ type QuickStatsProps = {
   budget?: any;
 };
 
+// 1. ROBUST CONVERSION: Handles "1,000", "₹500", and strings safely
 function toNumber(v: any) {
   if (v == null) return 0;
-  const n = Number(v);
+  if (typeof v === "number") return v;
+  // Remove anything that isn't a digit, dot, or minus sign
+  const clean = String(v).replace(/[^0-9.-]/g, "");
+  const n = parseFloat(clean);
   return Number.isFinite(n) ? n : 0;
 }
 
-/**
- * Try to get an array of expense items from known shapes:
- * - budget.expenses -> [{ amount }]
- * - budget.items -> [{ amt }]
- * - budget.categories -> { rent: 100, food: 200 }  (object map)
- * - or detect flat numeric keys (monthlyBills, food, transport, subscriptions, miscellaneous)
- */
-function collectExpenseItems(budget: any): number[] {
-  if (!budget) return [];
+// 2. SMART COLLECTOR: Grabs everything that looks like an expense
+function calculateTotals(budget: any) {
+  if (!budget) return { income: 0, totalExpenses: 0 };
 
-  // shape: array of objects
-  const arr = budget.expenses ?? budget.items ?? null;
-  if (Array.isArray(arr)) {
-    return arr.map((it) => toNumber(it?.amount ?? it?.amt ?? it?.value ?? it));
-  }
+  // Keys to IGNORE (Income, Metadata, IDs)
+  const ignoreKeys = new Set([
+    "income", "monthlyIncome", "salary", "paycheck", // Income variants
+    "id", "userId", "created_at", "updated_at", "name", "title", "notes", "date" // Metadata
+  ]);
 
-  // shape: object map e.g. categories: { rent: 100, food: 200 }
-  if (budget.categories && typeof budget.categories === "object") {
-    return Object.values(budget.categories).map((v) => toNumber(v));
-  }
+  let income = 0;
+  let totalExpenses = 0;
 
-  // flat keys commonly used in simple forms
-  const flatKeys = ["monthlyBills", "bills", "food", "transport", "subscriptions", "miscellaneous", "misc", "others", "other"];
-  const vals: number[] = [];
-  for (const k of flatKeys) {
-    if (k in budget) vals.push(toNumber(budget[k]));
-  }
+  // Iterate over every key in the budget object
+  Object.keys(budget).forEach((key) => {
+    const lowerKey = key.toLowerCase();
+    const val = toNumber(budget[key]);
 
-  // Also try to pick numeric keys not named 'income' or 'name'
-  // (helps if user used different labels)
-  const extras: number[] = [];
-  Object.keys(budget).forEach((k) => {
-    if (k === "income" || k === "monthlyIncome" || k === "salary" || k === "userId") return;
-    const val = budget[k];
-    if (typeof val === "string" || typeof val === "number") {
-      // skip obviously non-numeric labels
-      if (!/name|id|date|notes|title/i.test(k)) {
-        const n = toNumber(val);
-        // include if numeric and non-zero
-        if (n !== 0 && !flatKeys.includes(k)) extras.push(n);
-      }
+    // If it's an Income field, set income
+    if (lowerKey === "income" || lowerKey === "monthlyincome" || lowerKey === "salary") {
+      income = val;
+      return;
+    }
+
+    // If it's a valid number and NOT in our ignore list, count it as Expense
+    if (val > 0 && !ignoreKeys.has(key) && !lowerKey.includes("id")) {
+      totalExpenses += val;
     }
   });
 
-  return [...vals, ...extras];
+  return { income, totalExpenses };
 }
 
 export default function QuickStats({ budget }: QuickStatsProps) {
   const { income, totalExpenses, burnPercent, savings } = useMemo(() => {
-    const b = budget ?? {};
-    // income: try several keys
-    const incomeVal = toNumber(b.income ?? b.monthlyIncome ?? b.salary ?? b.amount ?? 0);
+    const { income, totalExpenses } = calculateTotals(budget);
 
-    const expensesList = collectExpenseItems(b);
-    const total = expensesList.reduce((s, x) => s + x, 0);
+    // Prevent division by zero
+    const burn = income > 0 ? Math.round((totalExpenses / income) * 100) : 0;
+    const save = income - totalExpenses;
 
-    const burn = incomeVal ? Math.round((total / incomeVal) * 100) : 0;
-    const save = Math.round(incomeVal - total);
-
-    return { income: incomeVal, totalExpenses: total, burnPercent: burn, savings: save };
+    return { 
+      income, 
+      totalExpenses, 
+      burnPercent: burn, 
+      savings: save 
+    };
   }, [budget]);
 
   return (
     <section style={{ marginBottom: 16 }}>
       <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+        
+        {/* Burn Rate */}
         <div style={{ minWidth: 120 }}>
           <strong>Burn rate</strong>
-          <div style={{ marginTop: 8, fontSize: 18 }}>{burnPercent}%</div>
+          <div style={{ marginTop: 8, fontSize: 18, color: burnPercent > 100 ? "red" : "inherit" }}>
+            {burnPercent}%
+          </div>
         </div>
 
+        {/* Total Expenses */}
         <div style={{ minWidth: 160 }}>
           <strong>Total expenses:</strong>
-          <div style={{ marginTop: 8, fontSize: 18 }}>₹{totalExpenses.toLocaleString()}</div>
+          <div style={{ marginTop: 8, fontSize: 18 }}>
+            ₹{totalExpenses.toLocaleString()}
+          </div>
         </div>
 
+        {/* Savings */}
         <div style={{ minWidth: 180 }}>
           <strong>Savings potential:</strong>
-          <div style={{ marginTop: 8, fontSize: 18 }}>₹{savings.toLocaleString()}</div>
+          <div style={{ marginTop: 8, fontSize: 18, color: savings < 0 ? "red" : "green" }}>
+            ₹{savings.toLocaleString()}
+          </div>
         </div>
       </div>
     </section>
