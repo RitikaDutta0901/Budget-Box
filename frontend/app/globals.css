@@ -1,0 +1,94 @@
+/* --- Paste / merge into app/globals.css --- */
+
+/* Page container & spacing */
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #0f172a;
+  background: #fff;
+  line-height: 1.5;
+}
+
+/* A roomy container centered on the page */
+.container {
+  max-width: 1200px;
+  margin: 36px auto;      /* pushes content away from top and centers */
+  padding: 0 28px;
+}
+
+/* Grid layout: wider left column and roomy gap */
+.grid {
+  display: grid;
+  grid-template-columns: 520px 1fr; /* wider left column for the form */
+  gap: 48px;                         /* larger horizontal gap */
+  align-items: start;
+}
+
+/* Card look and roomy padding */
+.card {
+  background: #fff;
+  border: 1px solid #e8eef6;
+  border-radius: 12px;
+  padding: 28px;                    /* more internal space */
+  box-shadow: 0 12px 30px rgba(16,24,40,0.04);
+}
+
+/* Headings with breathing room */
+.h2 {
+  font-size: 1.5rem;
+  margin: 0 0 18px 0;
+  font-weight: 700;
+}
+
+/* Form rows: labels above input, full width, tall inputs */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.form-row .label-text {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #0f172a;
+}
+.input {
+  width: 100%;
+  min-width: 0;
+  height: 46px;                      /* taller inputs */
+  padding: 10px 12px;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #d4dbe6;
+}
+.input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 10px 28px rgba(99,102,241,0.07);
+}
+
+/* Dashboard spacing */
+.stats { display:flex; gap:18px; margin-bottom: 20px; }
+.stat { padding: 14px; border-radius: 10px; min-width: 180px; }
+
+/* Chart area: larger and centered vertically */
+.chart-card {
+  display: flex;
+  gap: 36px;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;                 /* forces height so page doesn't look empty */
+  padding: 24px;
+}
+
+/* Breakdown list spacing */
+.breakdown-list { list-style:none; padding:0; margin:0; }
+.breakdown-list li { display:flex; justify-content:space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+
+/* Make sure the left column content isn't squashed on mobile */
+@media (max-width: 900px) {
+  .container { margin: 20px auto; padding: 0 14px; }
+  .grid { grid-template-columns: 1fr; gap: 22px; }
+  .chart-card { min-height: 360px; }
+  .input { height: 48px; }
+}
