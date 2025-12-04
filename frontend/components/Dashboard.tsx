@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useStore } from "../lib/store";
+import useBudgetStore from "../store/budgetStore"; // Changed this line
 import {
   ResponsiveContainer,
   PieChart,
@@ -42,13 +42,13 @@ function getDaysInfo() {
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const dayOfMonth = now.getDate();
-  const daysPassed = dayOfMonth - 1; // consider days completed
+  const daysPassed = dayOfMonth - 1;
   const daysRemaining = daysInMonth - dayOfMonth + 1;
   return { daysInMonth, dayOfMonth, daysPassed, daysRemaining };
 }
 
 export default function Dashboard() {
-  const { budget } = useStore();
+  const budget = useBudgetStore((s) => s.budget); // Changed this line
 
   const income = Number(budget.income ?? 0);
   const monthlyBills = Number(budget.monthlyBills ?? 0);
@@ -61,15 +61,12 @@ export default function Dashboard() {
   const burnRate = income ? totalExpenses / income : 0;
   const savings = income - totalExpenses;
 
-  // --- Month-end prediction ---
   const { daysInMonth, daysPassed, daysRemaining } = getDaysInfo();
-  // compute average daily expense (if no passed days, assume uniform per remaining days)
   const avgDailyExpense = daysPassed > 0 ? totalExpenses / daysPassed : totalExpenses / Math.max(1, daysInMonth);
   const predictedAdditional = avgDailyExpense * daysRemaining;
   const predictedTotalAtMonthEnd = totalExpenses + predictedAdditional;
   const predictionBalance = income - predictedTotalAtMonthEnd;
 
-  // --- anomaly warnings (distinct box)
   const warnings: string[] = [];
   if (income > 0) {
     if (subscriptions > 0.3 * income) warnings.push("Subscriptions are >30% of income.");
@@ -94,7 +91,6 @@ export default function Dashboard() {
     <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 26 }}>
       <h2 style={{ fontSize: 28, fontWeight: 700 }}>Dashboard</h2>
 
-      {/* Warnings */}
       {warnings.length > 0 && (
         <div style={{ background: "#fff4f4", border: "1px solid #ffd2d2", padding: 12, borderRadius: 8 }}>
           <strong>Warnings</strong>
@@ -106,7 +102,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Summary & prediction */}
       <div style={{ display: "flex", gap: 40, alignItems: "flex-start", flexWrap: "wrap" }}>
         <div>
           <div style={{ fontSize: 14 }}>Burn Rate</div>
@@ -140,7 +135,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Chart + breakdown */}
       <div style={{ display: "flex", gap: 28, alignItems: "flex-start" }}>
         <div style={{ width: 360, height: 360 }}>
           <ResponsiveContainer width="100%" height="100%">
