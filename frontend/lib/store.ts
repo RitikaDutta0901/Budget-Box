@@ -76,7 +76,7 @@ export const useStore = create<State>()(
     }),
     {
       name: "budgetbox-storage",
-      getStorage: () => (localforage as unknown) as any,
+      storage: (localforage as unknown) as any,
     }
   )
 );

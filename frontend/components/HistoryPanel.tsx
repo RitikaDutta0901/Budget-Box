@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import useBudgetStore from "../store/budgetStore";
 import { saveSnapshot, fetchSnapshots, deleteSnapshot, restoreSnapshot } from "../lib/api";
 
-export default function HistoryPanel(): JSX.Element {
+export default function HistoryPanel(): React.JSX.Element {
   const budget = useBudgetStore((s) => s.budget);
   const [snapshots, setSnapshots] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

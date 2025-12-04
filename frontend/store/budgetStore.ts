@@ -46,7 +46,7 @@ const useBudgetStore = create<State>()(
     }),
     {
       name: "budget-storage-v1",
-      getStorage: () => localforage,
+      storage: localforage,
       partialize: (state) => ({ budget: state.budget, serverUpdatedAt: state.serverUpdatedAt }),
     }
   )

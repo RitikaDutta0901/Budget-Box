@@ -2,16 +2,18 @@
 "use client";
 
 import React from "react";
-import useBudgetStore from "../store/budgetStore";
+//import useBudgetStore from "../store/budgetStore";
+import useBudgetStore, { BudgetShape } from '../store/budgetStore';
 
 export default function BudgetForm() {
   const budget = useBudgetStore((s) => s.budget);
   const setField = useBudgetStore((s) => s.setField);
 
-  function numberInput(field: string, value: string) {
-    const n = value === "" ? undefined : Number(value);
-    setField(field, n);
-  }
+function numberInput<K extends keyof BudgetShape>(field: K, value: string) {
+  const n: number | undefined = value === "" ? undefined : Number(value);
+  // cast number | undefined to the property type if necessary
+  setField(field, n as BudgetShape[K]);
+}
 
   return (
     <form
