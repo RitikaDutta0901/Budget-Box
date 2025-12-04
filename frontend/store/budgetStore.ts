@@ -47,7 +47,11 @@ const useBudgetStore = create<State>()(
     {
       name: "budget-storage-v1",
       storage: localforage,
-      partialize: (state) => ({ budget: state.budget, serverUpdatedAt: state.serverUpdatedAt }),
+      // persist only plain serializable data (no functions)
+      partialize: (state) => ({
+        budget: state.budget,
+        serverUpdatedAt: state.serverUpdatedAt,
+      }),
     }
   )
 );

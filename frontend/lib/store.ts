@@ -1,4 +1,4 @@
-// lib/store.ts
+// lib/store.ts  (or wherever your second store file is located)
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import localforage from "localforage";
@@ -39,7 +39,7 @@ const defaultBudget: Budget = {
 
 export const useStore = create<State>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       userId: null,
       budget: defaultBudget,
       syncStatus: "local-only",
@@ -49,7 +49,6 @@ export const useStore = create<State>()(
       setBudget: (b) =>
         set((s) => ({
           budget: { ...s.budget, ...(b as object) },
-          // any manual budget set is local edit → pending
           syncStatus: "sync-pending",
         })),
       setField: (k, v) =>
@@ -76,7 +75,14 @@ export const useStore = create<State>()(
     }),
     {
       name: "budgetbox-storage",
-      storage: (localforage as unknown) as any,
+      storage: localforage,
+      // IMPORTANT: persist only serializable fields; do NOT persist functions
+      partialize: (state) => ({
+        userId: state.userId,
+        budget: state.budget,
+        syncStatus: state.syncStatus,
+        lastSyncedAt: state.lastSyncedAt,
+      }),
     }
   )
 );
