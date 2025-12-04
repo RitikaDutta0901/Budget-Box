@@ -182,3 +182,13 @@ Live Demo Link:https://budget-box-4.onrender.com (frontend)
 Tech Stack: Next.js 16, React 19, Zustand, TailwindCSS, Express, Render
 Notes for Reviewer: 
 The app is designed following Local-First principles and works fully offline.
+
+## 📌11. Offline mode instruction
+Open the app
+Turn off Wi-Fi
+Change budget numbers
+Refresh page → Data remains
+Turn Wi-Fi back on
+Click Sync
+Server receives updated snapshot
+Dashboard reflects latest data
